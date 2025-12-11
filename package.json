@@ -5,23 +5,27 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
-    "migrate": "drizzle-kit migrate",
-    "drizzle:generate": "drizzle-kit generate"
+    "dev": "nodemon src/server.js",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "node src/db/seed.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
-    "drizzle-orm": "^0.45.0",
-    "better-sqlite3": "^8.0.1",
-    "express": "^5.2.1",
-    "nodemon": "^3.1.11"
+    "@libsql/client": "^0.15.15",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.6",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.10",
+    "zod": "^4.1.12",
+    "zof": "^0.0.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.8",
-    "typescript": "^5.1.6",
-    "ts-node": "^10.9.1",
-    "@types/node": "^20.4.2"
+    "drizzle-kit": "^0.31.5"
   }
 }

@@ -1,14 +1,13 @@
-/**
- * Drizzle Kit configuration (CommonJS)
- * @type {import('drizzle-kit').Config}
- */
-const config = {
-  schema: './src/db/schema.js',
-  out: './drizzle',
-  driver: 'better-sqlite3',
-  dbCredentials: {
-    url: 'file:./dev.sqlite'
-  }
-};
+import 'dotenv/config'
 
-module.exports = config;
+import { defineConfig} from 'drizzle-kit'
+
+export default defineConfig({
+    schema : './src/db/schema.js',
+    dialect : "sqlite",
+    dbCredentials : {
+        url : process.env.DB_FILE,
+
+
+    },
+})
