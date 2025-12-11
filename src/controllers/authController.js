@@ -1,10 +1,10 @@
-import { db } from '../db/index.js';
+import { db } from '../db/database.js';
 import { user } from '../db/schema.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
+import { eq } from 'drizzle-orm';
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -17,7 +17,7 @@ export const signup = async (req, res) => {
   try {
     const { email, firstName, lastName, password } = signupSchema.parse(req.body);
 
-    const existingUser = await db.select().from(user).where({ email: email });
+    const existingUser = await db.select().from(user).where(eq(user.email, email));
 
     if (existingUser.length > 0) {
       return res.status(409).send('User with this email already exists');
@@ -51,7 +51,7 @@ export const login = async (req, res) => {
       password: z.string(),
     }).parse(req.body);
 
-    const users = await db.select().from(user).where({ email: email });
+    const users = await db.select().from(user).where(eq(user.email, email));
 
     if (users.length === 0) {
       return res.status(404).send('User not found');
