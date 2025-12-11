@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text, boolean } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 
 
@@ -9,19 +9,19 @@ export const user = sqliteTable('user', {
   firstName: text('firstName'),
   lastName: text('lastName'),
   password: text('password'),
-  admin: boolean('admin').notNull().default(false),
+  admin: integer({mode: 'boolean' , name: 'admin'}).notNull().default(false),
   creationDate: text('creationDate').notNull()
 });
 
-export const collections = sqliteTable('collections', {
+export const collection = sqliteTable('collections', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: integer('userId').notNull(),
   title: text('title').notNull(),
   description: text('description'),
-  isPublic: boolean('isPublic').notNull().default(false)
+  isPublic: integer({mode: 'boolean' , name: 'isPublic'}).notNull().default(false)
 });
 
-export const flashcards = sqliteTable('flashcards', {
+export const flashcard = sqliteTable('flashcards', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   collectionId: integer('collectionId').notNull(),
   frontText: text('frontText').notNull(),

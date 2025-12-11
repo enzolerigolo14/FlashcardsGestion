@@ -1,9 +1,5 @@
-import { drizzle } from 'drizzle-orm/libsql';
-import { createClient } from '@libsql/client';
-import 'dotenv/config';
+import 'dotenv/config'
+import { drizzle } from 'drizzle-orm/libsql'
 
-const client = createClient({
-  url: process.env.DATABASE_URL || "file:./dev.sqlite",
-});
 
-export const db = drizzle(client);
+export const db = drizzle(process.env.DB_FILE)

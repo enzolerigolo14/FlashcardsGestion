@@ -1,6 +1,6 @@
 
 import { db } from './database.js';
-import * as schema from './schema.js';
+import { user , collection, flashcard, flashcardsProgress} from './schema.js';
 import bcrypt from 'bcrypt';
 
 const saltRounds = 10;
@@ -13,13 +13,13 @@ async function main() {
   const hashedPassword2 = await bcrypt.hash('password456', saltRounds);
 
   // Users
-  const users = await db.insert(schema.user).values([
+  const users = await db.insert(user).values([
     {
       email: 'admin@example.com',
       firstName: 'Admin',
       lastName: 'User',
       password: hashedPassword1,
-      admin: true,
+      admin: 1,
       creationDate: new Date().toISOString(),
     },
     {
@@ -27,29 +27,29 @@ async function main() {
         firstName: 'Regular',
         lastName: 'User',
         password: hashedPassword2,
-        admin: false,
+        admin: 0,
         creationDate: new Date().toISOString(),
       },
   ]).returning();
 
   // Collections
-  const collections = await db.insert(schema.collections).values([
+  const collections = await db.insert(collection).values([
     {
       userId: users[0].id,
       title: 'Capitales du Monde',
       description: 'Apprenez les capitales des pays du monde.',
-      isPublic: true,
+      isPublic: 1,
     },
     {
       userId: users[1].id,
       title: 'Vocabulaire Anglais',
       description: 'Mots de vocabulaire de base en anglais.',
-      isPublic: false,
+      isPublic: 0,
     },
   ]).returning();
 
   // Flashcards
-  const flashcards = await db.insert(schema.flashcards).values([
+  const flashcards = await db.insert(flashcard).values([
     {
       collectionId: collections[0].id,
       frontText: 'France',
@@ -73,7 +73,7 @@ async function main() {
   ]).returning();
 
   // flashcardsProgress
-  await db.insert(schema.flashcardsProgress).values([
+  await db.insert(flashcardsProgress).values([
     {
       userId: users[0].id,
       flashCardId: flashcards[0].id,
