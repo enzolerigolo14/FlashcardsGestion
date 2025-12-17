@@ -1,9 +1,6 @@
 import { db } from '../db/database.js';
 import { user } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
-import bcrypt from 'bcrypt'
-import jwt from 'jsonwebtoken'
 import 'dotenv/config' 
 
 

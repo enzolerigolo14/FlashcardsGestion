@@ -1,13 +1,15 @@
 import { db } from '../db/database.js';
 import { collection } from '../db/schema.js';
-import { z } from 'zod';
+
 import { eq } from 'drizzle-orm';
 
-const collectionSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  authorId: z.number().int(),
-});
+
+/**
+ * 
+ * @param { request } req
+ * @param { response} res
+ */
+
 
 export const createCollection = async (req, res) => {
   try {
@@ -31,6 +33,13 @@ export const createCollection = async (req, res) => {
   }
 };
 
+/**
+ * 
+ * @param { request } req
+ * @param { response} res
+ */
+
+
 export const getCollections = async (req, res) => {
   try {
     const collections = await db.select().from(collection);
@@ -39,6 +48,12 @@ export const getCollections = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+/**
+ * 
+ * @param { request } req
+ * @param { response} res
+ */
+
 
 export const getCollectionById = async (req, res) => {
   try {
@@ -54,6 +69,13 @@ export const getCollectionById = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+/**
+ * 
+ * @param { request } req
+ * @param { response} res
+ */
+
 
 export const updateCollection = async (req, res) => {
   try {
@@ -78,6 +100,14 @@ export const updateCollection = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+/**
+ * 
+ * @param { request } req
+ * @param { response} res
+ */
+
+
 
 export const deleteCollection = async (req, res) => {
   try {
