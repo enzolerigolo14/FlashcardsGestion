@@ -1,128 +1,141 @@
 import { db } from '../db/database.js';
-import { collection } from '../db/schema.js';
-
-import { eq } from 'drizzle-orm';
-
-
-/**
- * 
- * @param { request } req
- * @param { response} res
- */
-
+import { collection, flashcard } from '../db/schema.js';
+import { eq, and, like, desc } from 'drizzle-orm';
 
 export const createCollection = async (req, res) => {
   try {
-    const { name, description, authorId } = collectionSchema.parse(req.body);
+    const { title, description, isPublic } = req.body;
+    const userId = req.user.id;
 
-    const newCollection = {
-      name,
+    const result = await db.insert(collection).values({
+      userId,
+      title,
       description,
-      authorId,
-      creationDate: new Date().toISOString(),
-    };
+      isPublic: isPublic || false,
+    }).returning();
 
-    await db.insert(collection).values(newCollection);
-
-    res.status(201).send('Collection created successfully');
+    res.status(201).json(result[0]);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json(error.errors);
-    }
-    res.status(500).send('Internal Server Error');
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create collection' });
   }
 };
 
-/**
- * 
- * @param { request } req
- * @param { response} res
- */
-
-
-export const getCollections = async (req, res) => {
+export const getCollection = async (req, res) => {
   try {
-    const collections = await db.select().from(collection);
+    const collectionId = parseInt(req.params.id);
+    if (isNaN(collectionId)) {
+      return res.status(400).json({ error: 'Invalid collection ID' });
+    }
+    const userId = req.user.id;
+
+    const foundCollection = await db.select().from(collection).where(eq(collection.id, collectionId)).get();
+
+    if (!foundCollection) {
+      return res.status(404).json({ error: 'Collection not found' });
+    }
+
+    if (foundCollection.isPublic || foundCollection.userId === userId || isAdmin) {
+      return res.json(foundCollection);
+    }
+
+    res.status(403).json({ error: 'Access denied' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to retrieve collection' });
+  }
+};
+
+export const getMyCollections = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const collections = await db.select().from(collection).where(eq(collection.userId, userId));
     res.json(collections);
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    console.error(error);
+    res.status(500).json({ error: 'Failed to retrieve collections' });
   }
 };
-/**
- * 
- * @param { request } req
- * @param { response} res
- */
 
-
-export const getCollectionById = async (req, res) => {
+export const getPublicCollections = async (req, res) => {
   try {
-    const { id } = req.params;
-    const collections = await db.select().from(collection).where(eq(collection.id, id));
+    const { search } = req.query;
+    let query = db.select().from(collection).where(eq(collection.isPublic, true));
 
-    if (collections.length === 0) {
-      return res.status(404).send('Collection not found');
+    if (search) {
+      query = db.select().from(collection).where(
+        and(
+            eq(collection.isPublic, true),
+            like(collection.title, `%${search}%`)
+        )
+      );
     }
+    const collections = await query.all();
 
-    res.json(collections[0]);
+    res.json(collections);
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    console.error(error);
+    res.status(500).json({ error: 'Failed to search collections' });
   }
 };
-
-/**
- * 
- * @param { request } req
- * @param { response} res
- */
-
 
 export const updateCollection = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, description } = collectionSchema.partial().parse(req.body);
+    const collectionId = parseInt(req.params.id);
+    if (isNaN(collectionId)) {
+      return res.status(400).json({ error: 'Invalid collection ID' });
+    }
+    const userId = req.user.id;
+    const { title, description, isPublic } = req.body;
 
-    const updatedCollection = {      ...(name && { name }),
-      ...(description && { description }),
-    };
+    const existingCollection = await db.select().from(collection).where(eq(collection.id, collectionId)).get();
 
-    const result = await db.update(collection).set(updatedCollection).where(eq(collection.id, id));
-
-    if (result.rowsAffected === 0) {
-      return res.status(404).send('Collection not found');
+    if (!existingCollection) {
+      return res.status(404).json({ error: 'Collection not found' });
     }
 
-    res.status(200).send('Collection updated successfully');
+    if (existingCollection.userId !== userId) {
+      return res.status(403).json({ error: 'Only the owner can update this collection' });
+    }
+
+    const updatedCollection = await db.update(collection)
+      .set({ title, description, isPublic })
+      .where(eq(collection.id, collectionId))
+      .returning();
+
+    res.json(updatedCollection[0]);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json(error.errors);
-    }
-    res.status(500).send('Internal Server Error');
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update collection' });
   }
 };
-
-/**
- * 
- * @param { request } req
- * @param { response} res
- */
-
-
 
 export const deleteCollection = async (req, res) => {
   try {
-    const { id } = req.params;
+    const collectionId = parseInt(req.params.id);
+    if (isNaN(collectionId)) {
+      return res.status(400).json({ error: 'Invalid collection ID' });
+    }
+    const userId = req.user.id;
 
-    const result = await db.delete(collection).where(eq(collection.id, id));
+    const existingCollection = await db.select().from(collection).where(eq(collection.id, collectionId)).get();
 
-    if (result.rowsAffected === 0) {
-      return res.status(404).send('Collection not found');
+    if (!existingCollection) {
+      return res.status(404).json({ error: 'Collection not found' });
     }
 
-    res.status(200).send('Collection deleted successfully');
+    if (existingCollection.userId !== userId) {
+      return res.status(403).json({ error: 'Only the owner can delete this collection' });
+    }
+
+
+    await db.delete(flashcard).where(eq(flashcard.collectionId, collectionId));
+
+    await db.delete(collection).where(eq(collection.id, collectionId));
+
+    res.status(204).send();
   } catch (error) {
-    res.status(500).send('Internal Server Error');
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete collection' });
   }
 };
-
-      
