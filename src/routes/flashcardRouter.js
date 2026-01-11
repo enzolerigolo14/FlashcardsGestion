@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { createFlashcard, getFlashcard, getCollectionFlashcards, getFlashcardsToReview, updateFlashcard, deleteFlashcard, reviewFlashcard } from '../controllers/flashcardController.js';
 import { authenticateToken } from '../middlewares/auth.js';
 import { validateBody } from '../middlewares/validation.js';
-import { createFlashcardSchema, updateFlashcardSchema, reviewFlashcardSchema } from '../models/flashcard.js';
+import { createFlashcardSchema, updateFlashcardSchema, reviewFlashcardSchema } from '../models/flashcards.js';
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import { db } from '../db/database.js';
 import { user } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import 'dotenv/config' 
 
 
@@ -14,13 +14,13 @@ import 'dotenv/config'
 export const getAllUsers = async (req, res) => {
    try {
         const result = await db.select({
-            id: users.id,
-            email: users.email,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            role: users.role,
-            createdAt: users.createdAt
-        }).from(users).orderBy(desc(users.createdAt)).all();
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            admin: user.admin,
+            creationDate: user.creationDate
+        }).from(user).orderBy(desc(user.creationDate)).all();
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
@@ -39,17 +39,17 @@ export const getUser = async (req, res) => {
     if(isNaN(id)) return res.status(400).json({error: "Invalid ID"});
 
     try {
-        const user = await db.select({
-            id: users.id,
-            email: users.email,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            role: users.role,
-            createdAt: users.createdAt
-        }).from(users).where(eq(users.id, id)).get();
+        const foundUser = await db.select({
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            admin: user.admin,
+            creationDate: user.creationDate
+        }).from(user).where(eq(user.id, id)).get();
         
-        if(!user) return res.status(404).json({error: "User not found"});
-        res.json(user);
+        if(!foundUser) return res.status(404).json({error: "User not found"});
+        res.json(foundUser);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
     }
